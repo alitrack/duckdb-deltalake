@@ -1,15 +1,13 @@
-import os,base64
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime, date, timedelta
 import urllib.request as urllib2
-import tempfile
 import pandas as pd
 import pyarrow as pa
 from deltalake import DeltaTable
 from deltalake.writer import write_deltalake
 import duckdb 
-import re ,shutil
+import re
 from urllib.request import urlopen
 
 st.set_page_config(
@@ -86,8 +84,6 @@ col1.markdown(link,unsafe_allow_html=True)
 
 ####################################### ETL#############################################################################
 #st.subheader("Downloading New files from AEMO website, Data will be refreshed in 5 minutes, or refresh your browser ")
-def get_file_path(filename):
-    return os.path.join(tempfile.gettempdir(), filename)
 
 def getfiles(Path,url):    
     
@@ -119,9 +115,7 @@ def getfiles(Path,url):
 def load(files_to_upload,table_path,url): 
     if len(files_to_upload) != 0 :
       for x in files_to_upload:
-            with urlopen(url+x) as source, open(get_file_path(x), 'w+b') as target:
-                shutil.copyfileobj(source, target)
-            df = pd.read_csv(get_file_path(x),skiprows=1,usecols=["SETTLEMENTDATE", "DUID", "SCADAVALUE"],parse_dates=["SETTLEMENTDATE"])
+            df = pd.read_csv(url+x,skiprows=1,usecols=["SETTLEMENTDATE", "DUID", "SCADAVALUE"],parse_dates=["SETTLEMENTDATE"])
             df=df.dropna(how='all') #drop na
             df['SETTLEMENTDATE']= pd.to_datetime(df['SETTLEMENTDATE'])
             df['Date'] = df['SETTLEMENTDATE'].dt.date
